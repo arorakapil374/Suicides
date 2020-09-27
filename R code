@@ -1,0 +1,61 @@
+Suicide_load <- read.csv("D:\\R Language\\Project practise (R)\\30292_38613_bundle_archive\\Suicides.csv", header = TRUE)
+View(Suicide_load)
+summary(Suicide_load)
+str(Suicide_load)
+class(Suicide_load)
+##
+#using sapply function to find the na values within the each variable
+sapply(Suicide_load, function(x) sum(is.na(x)))
+
+
+## using VIM library to look for missing values in a better way
+### looking for missing values using aggr function
+install.packages("VIM")
+library(VIM)
+aggr(Suicide_load, col = c("green","red"),
+     labels = names(Suicide_load), numbers = TRUE, sortvars = TRUE)
+## There are no missing values in the data 
+
+## using box-plot to look for outliers
+attach(Suicide_load)
+ggplot( data = Suicide_load, aes( x = Gender, y = Total))+
+  geom_boxplot() + xlab("Gender") + ylab("Total Suicides") +
+  coord_cartesian(ylim=c(0,7))
+
+## here there won't be any outliers as you can see data is spread for causes,
+##by means, professional life etc. Each property has its own total values.
+
+## Futher performing EDA's to find out answer of questions related to data.
+
+### which is the main cause of suicide?? ###
+
+## take summary of data for this
+attach(Suicide_load)
+main_cause <- Suicide_load %>% select(Type_code,Type,Total)%>%
+  filter(Type_code == "Causes") %>% group_by(Type_code,Type) %>% 
+  summarise(Total_sum = sum(Total)) %>% arrange(desc(Total_sum))
+View(main_cause)
+
+#Plotting the data
+
+plot_main_cause <- ggplot(data = main_cause, aes(x = Type, y = Total_sum)) +
+  geom_point(aes(size = Total_sum, color = Type)) + coord_flip() + scale_y_continuous( limits = c(750,350000), breaks = seq(750, 350000, 50000))+
+  xlab("Type of Case") + ylab("Total Suicide Cases") + ggtitle("What is the Main Cause Of Suicide In India") + 
+  theme_minimal(9) + scale_size(guide = FALSE)
+plot_main_cause
+
+
+## which age people commit suicide the most and least?
+main_cause2 <- Suicide_load %>% select(Type_code,Age_group,Total)%>%
+  filter(Type_code == "Causes") %>% group_by(Type_code,Age_group) %>% 
+  summarise(Total_sum2 = sum(Total)) %>% arrange(Age_group,desc(Total_sum2))
+View(main_cause2)
+
+## plot the data
+
+plot_age_cause <- ggplot(data = main_cause2 , aes(x = Age_group, y = Total_sum2))+
+  geom_point(aes(color = Age_group, size = Total_sum2)) + scale_size(guide = FALSE)+
+  geom_segment(aes(x = Age_group, xend = Age_group, y = 10000, yend = Total_sum2,color = Age_group), size = 2)+
+  scale_y_continuous(limits = c(10000,600000), breaks = seq(10000,600000,50000)) + scale_size(guide = FALSE)  + ggtitle("Age_values")+
+  theme_minimal(9) + coord_flip()
+plot_age_cause  
